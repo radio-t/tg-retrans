@@ -1,0 +1,25 @@
+{
+  "icestats": {
+    "admin": "icemaster@localhost",
+    "host": "master.radio-t.com",
+    "location": "Earth",
+    "server_id": "Icecast 2.4.4",
+    "server_start": "Wed, 04 Oct 2023 08:31:04 -0500",
+    "server_start_iso8601": "2023-10-04T08:31:04-0500",
+    "source": {
+      "bitrate": 128,
+      "genre": "Spoken",
+      "listener_peak": 1,
+      "listeners": 1,
+      "listenurl": "http://master.radio-t.com:8000/master",
+      "server_description": "Unspecified description",
+      "server_name": "RADIO-T",
+      "server_type": "audio/mpeg",
+      "server_url": "https://radio-r.com",
+      "stream_start": "Sun, 13 Oct 2024 14:02:18 -0500",
+      "stream_start_iso8601": "2024-10-13T14:02:18-0500",
+      "title": "Ð Ð°Ð´Ð¸Ð¾-Ð¢",
+      "dummy": null
+    }
+  }
+}
