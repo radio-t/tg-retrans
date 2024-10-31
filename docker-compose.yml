@@ -1,6 +1,6 @@
 services:
   server:
-    image: radio-t/tg-retrans:0.1.0
+    image: radiot/tg-retrans:master
     hostname: tg-retrans
     restart: unless-stopped
     environment:
