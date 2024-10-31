@@ -11,7 +11,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: build and push master image
-        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           docker build -t radiot/tg-retrans:master .
           docker login --username ${{ secrets.DOCKERHUB_USER }} --password ${{ secrets.DOCKERHUB_PASSWD }}
