@@ -1,0 +1,28 @@
+name: build
+on: [push, pull_request]
+jobs:
+
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: build and push master image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        run: |
+          docker build -t radiot/tg-retrans:master .
+          docker login --username ${{ secrets.DOCKERHUB_USER }} --password ${{ secrets.DOCKERHUB_PASSWD }}
+          docker push radiot/tg-retrans:master
+
+      - name: build and push tagged image
+        if: github.event_name == 'push' && github.event.ref_type == 'tag'
+        run: |
+          GIT_TAG="${GITHUB_REF#refs/tags/}"
+          docker build -t radiot/tg-retrans:${GIT_TAG} .
+          docker login --username ${{ secrets.DOCKERHUB_USER }} --password ${{ secrets.DOCKERHUB_PASSWD }}
+          docker push radiot/tg-retrans:${GIT_TAG}
+          docker tag radiot/tg-retrans:${GIT_TAG} radiot/tg-retrans:latest
+          docker push radiot/tg-retrans:latest
