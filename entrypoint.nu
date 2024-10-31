@@ -55,7 +55,7 @@ def work [] {
   $run_opts = ($run_opts | append ['-pix_fmt', 'yuv420p'])
   $run_opts = ($run_opts | append ['-c:a', 'aac'])
   $run_opts = ($run_opts | append ['-b:a','128k'])
-  $run_opts = ($run_opts | append ['-ac', '2'])
+  $run_opts = ($run_opts | append ['-ac', '1'])
   $run_opts = ($run_opts | append ['-ar', '44100'])
   $run_opts = ($run_opts | append ['-f','flv'])
   $run_opts = ($run_opts | append ['-rtmp_live','-1'])
