@@ -1,17 +1,32 @@
+FROM golang:1.23-alpine as build
+
+ARG GIT_BRANCH
+ARG GITHUB_SHA
+
+ADD . /build
+WORKDIR /build
+
+RUN version=${GIT_BRANCH}-${GITHUB_SHA:0:7}-$(date +%Y%m%dT%H:%M:%S)
+RUN echo "version=$version"
+RUN go build -o /build/tg-retrans -ldflags "-X main.revision=${version} -s -w"
+
+
 FROM alpine:3.20
 
+# enables automatic changelog generation by tools like Dependabot
+LABEL org.opencontainers.image.source="https://github.com/radio-t/tg-retrans"
+
 RUN \
-  set -xe; \
-  echo "**** install runtime ****" && \
-    apk add --update --no-cache ffmpeg nushell && \
+    set -xe; \
+    echo "**** install runtime ****" && \
+    apk add --update --no-cache ffmpeg && \
     rm -rf /var/cache/apk/* && \
-  echo "**** quick test ffmpeg ****" && \
+    echo "**** quick test ffmpeg ****" && \
     ldd /usr/bin/ffmpeg && \
     /usr/bin/ffmpeg -version
 
-COPY /entrypoint.nu /
-COPY /logo-dark.png /
+COPY --from=build /build/tg-retrans /srv/tg-retrans
+COPY /logo-dark.png /srv
 
-SHELL ["/usr/bin/nu", "-c"]
-
-ENTRYPOINT ["/entrypoint.nu"]
+WORKDIR /srv
+ENTRYPOINT ["/srv/tg-retrans"]

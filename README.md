@@ -6,7 +6,8 @@
 
 ### Подготовка
 
-1. Загрузить образ контейнера с hub.docker.com или собрать его
+1. Скопировать файл docker-compose.yml.dist в docker-compose.yml.
+2. Загрузить образ контейнера с hub.docker.com или собрать его
 
 ```bash
 docker compose pull
@@ -17,8 +18,8 @@ docker compose pull
 ```bash
 docker compose build
 ```
-2. Создать чат в Telegram.
-3. Запустить в чате аудио-видео звонок в режиме стрима.
+3. Создать чат в Telegram.
+4. Запустить в чате аудио-видео звонок в режиме стрима.
 
 ### Запуск
 
