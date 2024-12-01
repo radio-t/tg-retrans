@@ -45,7 +45,7 @@ jobs:
         USERNAME: ${{ github.actor }}
       run: |
         docker build -t radiot/tg-retrans:master .
-        echo ${DOCKER_HUB_TOKEN} | docker login -u ${USERNAME} --password-stdin
+        echo ${DOCKER_HUB_TOKEN} | docker login -u umputun --password-stdin
         docker push radiot/tg-retrans:master
 
     - name: build and push tagged image
@@ -53,7 +53,7 @@ jobs:
       run: |
         GIT_TAG="${GITHUB_REF#refs/tags/}"
         docker build -t radiot/tg-retrans:${GIT_TAG} .
-        echo ${DOCKER_HUB_TOKEN} | docker login -u ${USERNAME} --password-stdin
+        echo ${DOCKER_HUB_TOKEN} | docker login -u umputun --password-stdin
         docker push radiot/tg-retrans:${GIT_TAG}
         docker tag radiot/tg-retrans:${GIT_TAG} radiot/tg-retrans:latest
         docker push radiot/tg-retrans:latest
