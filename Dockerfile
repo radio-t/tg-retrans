@@ -11,7 +11,8 @@ RUN echo "version=$version"
 RUN go build -o /build/tg-retrans -ldflags "-X main.revision=${version} -s -w"
 
 
-FROM alpine:3.20
+#FROM alpine:3.20
+FROM umputun/baseimage:app-latest
 
 # enables automatic changelog generation by tools like Dependabot
 LABEL org.opencontainers.image.source="https://github.com/radio-t/tg-retrans"
@@ -27,6 +28,9 @@ RUN \
 
 COPY --from=build /build/tg-retrans /srv/tg-retrans
 COPY /logo-dark.png /srv
+RUN chown -R app:app /srv
 
 WORKDIR /srv
+USER app:app
+
 ENTRYPOINT ["/srv/tg-retrans"]
