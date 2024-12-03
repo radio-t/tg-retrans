@@ -43,8 +43,7 @@ func main() {
 	defer stop()
 
 	if err := run(ctx); err != nil {
-		log.Printf("[ERROR] run failed: %v", err)
-		os.Exit(1)
+		log.Fatalf("[ERROR] run failed: %v", err)
 	}
 	log.Printf("[INFO] completed")
 }
@@ -71,7 +70,7 @@ func run(ctx context.Context) error {
 		}
 
 		if checkStreamStatus(ctx) {
-			log.Print("[DEBUG] Stream is available, start retranslation")
+			log.Print("[INFO] Stream is available, start retranslation")
 			if err := startRetrans(ctx); err != nil {
 				log.Printf("[WARN] failed to start retranslation: %v", err)
 			}
@@ -88,12 +87,12 @@ func checkStreamStatus(ctx context.Context) bool {
 	client := http.Client{Timeout: opts.CheckTimeout}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, opts.CheckURL, http.NoBody)
 	if err != nil {
-		log.Printf("[DEBUG] Can't make request to %s: %v", opts.CheckURL, err)
+		log.Printf("[WARN] Can't make request to %s: %v", opts.CheckURL, err)
 		return false
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Printf("[DEBUG] Can't get response from %s: %v", opts.CheckURL, err)
+		log.Printf("[WARN] Can't get response from %s: %v", opts.CheckURL, err)
 		return false
 	}
 	defer resp.Body.Close()
@@ -105,22 +104,22 @@ func checkStreamStatus(ctx context.Context) bool {
 
 	data := map[string]any{}
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		log.Printf("[DEBUG] Failed to decode response: %v", err)
+		log.Printf("[WARN] Failed to decode response: %v", err)
 		return false
 	}
 
 	icestats, ok := data["icestats"].(map[string]any)
 	if !ok {
-		log.Printf("[DEBUG] Missing icestats key in response")
+		log.Printf("[WARN] Missing icestats key in response")
 		return false
 	}
 
 	if sources, ok := icestats["source"]; !ok || sources == nil {
-		log.Printf("[DEBUG] FAIL: missing or empty source")
+		log.Printf("[WARN] Missing or empty source in icestats response")
 		return false
 	}
 
-	log.Printf("[DEBUG] SUCCESS")
+	log.Printf("[DEBUG] Status check passed")
 	return true
 }
 
@@ -163,11 +162,12 @@ func startRetrans(ctx context.Context) error {
 
 	destURL := fmt.Sprintf("rtmps://%s/s/%s", opts.TGServer, opts.TGKey)
 	log.Printf("[INFO] Start retranslation from %s to %s", opts.StreamURL, destURL)
+	start := time.Now()
 	if err := spawnFFmpeg(destURL); err != nil {
 		return fmt.Errorf("failed to start retranslation: %w", err)
 	}
 
-	log.Printf("[INFO] End retranslation")
+	log.Printf("[INFO] End retranslation in %v", time.Since(start))
 	return nil
 }
 
