@@ -6,14 +6,18 @@ services:
     environment:
       # Optional. Enable debug info. Default: false
       #- DEBUG=false
-      # Optional. Enable check. Default: false
-      #- CHECK=false
+      # Optional. Disable icecast status check. Default: false
+      #- SKIP_CHECK=false
       # Optional. Configure check URL. Default: http://icecast:8000/status-json.xsl
       #- CHECK_URL=http://icecast:8000/status-json.xsl
-      # Optional. Configure check interval in seconds. Default: 60
-      #- CHECK_INTERVAL=60
+      # Optional. Configure check interval in seconds. Default: 60s
+      #- CHECK_INTERVAL=60s
+      # Optional. Configure check timeout in seconds. Default: 5s
+      #- CHECK_INTERVAL=5s
       # Optional. Configure source stream URL. Default: https://stream.radio-t.com
       #- STREAM_URL=https://stream.radio-t.com
+      # Optional. Path to ffmpeg binary. Default: /usr/bin/ffmpeg
+      #- FFMPEG_PATH=/usr/bin/ffmpeg
       # Optional. Configure name of Telegram streaming host. Default: dc4-1.rtmp.t.me
       #- TG_SERVER=dc4-1.rtmp.t.me
       # Mandatory. Configure key for Telegram chat audio-video conference call.
