@@ -95,7 +95,7 @@ func checkStreamStatus(ctx context.Context) bool {
 		log.Printf("[WARN] Can't get response from %s: %v", opts.CheckURL, err)
 		return false
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		log.Printf("[DEBUG] Invalid status code for %s: %d", opts.CheckURL, resp.StatusCode)
