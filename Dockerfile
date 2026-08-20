@@ -1,4 +1,4 @@
-FROM golang:1.23-alpine as build
+FROM golang:1.26-alpine as build
 
 ARG GIT_BRANCH
 ARG GITHUB_SHA
