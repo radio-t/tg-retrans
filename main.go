@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -42,7 +43,8 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	if err := run(ctx); err != nil {
+	// cancellation means the shutdown signal was received, not a failure
+	if err := run(ctx); err != nil && !errors.Is(err, context.Canceled) {
 		log.Fatalf("[ERROR] run failed: %v", err)
 	}
 	log.Printf("[INFO] completed")
@@ -53,16 +55,16 @@ func main() {
 func run(ctx context.Context) error {
 	if opts.SkipCheck {
 		if err := startRetrans(ctx); err != nil {
-			return fmt.Errorf("failed to start retranslation: %w", err)
+			return shutdownErr(ctx, fmt.Errorf("failed to start retranslation: %w", err))
 		}
 		if !checkStreamStatus(ctx) {
-			return fmt.Errorf("stream is not available")
+			return shutdownErr(ctx, fmt.Errorf("stream is not available"))
 		}
 		return nil
 	}
 
 	for {
-		// cancel the context if the parent is done
+		// don't start a new cycle on a cancelled context
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -71,14 +73,31 @@ func run(ctx context.Context) error {
 
 		if checkStreamStatus(ctx) {
 			log.Print("[INFO] Stream is available, start retranslation")
-			if err := startRetrans(ctx); err != nil {
+			if err := startRetrans(ctx); err != nil && ctx.Err() == nil {
 				log.Printf("[WARN] failed to start retranslation: %v", err)
 			}
 		} else {
 			log.Printf("[DEBUG] Not streaming, next check in %v", opts.CheckInterval)
 		}
-		time.Sleep(opts.CheckInterval)
+
+		// wait for the next check, interruptible by the shutdown signal
+		timer := time.NewTimer(opts.CheckInterval)
+		select {
+		case <-ctx.Done():
+			timer.Stop()
+			return ctx.Err()
+		case <-timer.C:
+		}
 	}
+}
+
+// shutdownErr replaces err with the context error if ctx is done, so the caller
+// can tell an intended shutdown from a real failure
+func shutdownErr(ctx context.Context, err error) error {
+	if ctxErr := ctx.Err(); ctxErr != nil {
+		return ctxErr
+	}
+	return err
 }
 
 // checkStreamStatus checks if the stream is available
@@ -92,7 +111,9 @@ func checkStreamStatus(ctx context.Context) bool {
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Printf("[WARN] Can't get response from %s: %v", opts.CheckURL, err)
+		if ctx.Err() == nil { // stay quiet if the request was interrupted by the shutdown
+			log.Printf("[WARN] Can't get response from %s: %v", opts.CheckURL, err)
+		}
 		return false
 	}
 	defer func() { _ = resp.Body.Close() }()
@@ -104,7 +125,9 @@ func checkStreamStatus(ctx context.Context) bool {
 
 	data := map[string]any{}
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		log.Printf("[WARN] Failed to decode response: %v", err)
+		if ctx.Err() == nil {
+			log.Printf("[WARN] Failed to decode response: %v", err)
+		}
 		return false
 	}
 
